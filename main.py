@@ -1,7 +1,6 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 import webbrowser
 import threading
-import PyQt5
 import pyautogui
 import random
 import sys
@@ -41,24 +40,24 @@ class MainWindow(QtWidgets.QWidget):
 
     # Buttions functions
     def instruction(self):
-        if not self.instruction_message_frame.graphicsEffect().opacity():
-            self.instruction_frame.show()
+        if not self.messagebox_message_frame.graphicsEffect().opacity():
+            self.messagebox_frame.show()
             self.frames_group = QtCore.QParallelAnimationGroup()
             self.frames_group.addAnimation(self.fade(self.auth_frame, 300, 0.9995, 0.6000))
             self.frames_group.addAnimation(self.fade(self.picture_frame, 300, 0.9995, 0.6000))
             self.frames_group.start()
 
-            self.unfade(self.instruction_message_frame, 300, 0.0, 0.9995).start()
+            self.unfade(self.messagebox_message_frame, 300, 0.0, 0.9995).start()
 
     def close_instruction(self):
-        if self.instruction_message_frame.graphicsEffect().opacity() >= 0.9995:
+        if self.messagebox_message_frame.graphicsEffect().opacity() >= 0.9995:
             self.frames_group = QtCore.QParallelAnimationGroup()
             self.frames_group.addAnimation(self.unfade(self.auth_frame, 300, 0.6000, 0.9995))
             self.frames_group.addAnimation(self.fade(self.picture_frame, 300, 0.6000, 0.9995))
             self.frames_group.start()
 
-            self.fade(self.instruction_message_frame, 300, 0.9995, 0.0).start()
-            self.instruction_frame.hide()
+            self.fade(self.messagebox_message_frame, 300, 0.9995, 0.0).start()
+            self.messagebox_frame.hide()
 
     def open_discord(self):
         webbrowser.open('https://discord.gg/hYrsuZDch3')
@@ -156,7 +155,7 @@ class MainWindow(QtWidgets.QWidget):
 
         self.picture_frame = QtWidgets.QFrame(self)
         self.picture_frame.setGeometry(350, 0, 450, 600)
-        self.picture_frame.setStyleSheet('QFrame{\nbackground-color: none; background-image: url(background_image.png);}')
+        self.picture_frame.setStyleSheet('QFrame{\nbackground-color: none; background-image: url(rs_images/background_image.png);}')
         self.picture_frame.mousePressEvent = self.mousePressEvent
         self.picture_frame.mouseMoveEvent = self.mouseMoveEvent
 
@@ -175,24 +174,72 @@ class MainWindow(QtWidgets.QWidget):
         self.minimize_button.clicked.connect(lambda: self.showMinimized())
 
         # Instruction message frame
-        self.instruction_frame = QtWidgets.QPushButton(self)
-        self.instruction_frame.setStyleSheet('QPushButton{\nbackground-color: none; border: none;}')
-        self.instruction_frame.setGeometry(0, 0, self.width(), self.height())
-        self.instruction_frame.clicked.connect(self.close_instruction)
+        self.messagebox_frame = QtWidgets.QPushButton(self)
+        self.messagebox_frame.setStyleSheet('QPushButton{\nbackground-color: none; border: none;}')
+        self.messagebox_frame.setGeometry(0, 0, self.width(), self.height())
+        self.messagebox_frame.clicked.connect(self.close_instruction)
 
-        self.instruction_message_frame = QtWidgets.QFrame(self.instruction_frame)
-        self.instruction_message_frame.setGeometry(self.width() // 2 - 250, self.height() // 2 - 100, 500, 200)
-        self.instruction_message_frame.setStyleSheet('QFrame{\nbackground-color: white;}')
+        self.messagebox_message_frame = QtWidgets.QFrame(self.messagebox_frame)
+        self.messagebox_message_frame.setGeometry(self.width() // 2 - 250, self.height() // 2 - 100, 500, 200)
+        self.messagebox_message_frame.setStyleSheet('QFrame{\nbackground-color: white;}')
 
-        self.instruction_message_frame_label = QtWidgets.QLabel(self.instruction_message_frame)
-        self.instruction_message_frame_label.setGeometry(20, 20, self.instruction_message_frame.width() - 40, self.instruction_message_frame.height() - 40)
-        self.instruction_message_frame_label.setStyleSheet('QLabel{\nbackground-color: none; color: rgb(150, 150, 150);}')
-        self.instruction_message_frame_label.setText(translate('', 'Для получения вашего Discord-ID введите ">>id" боту.\nДля получения проверочного ключа введите ">>key" боту.\nДля успешной отправки сообщений боту вы должны:\n1. Разрешить отправшу сообщений членам сервера в дискорде.\n2. Находиться на дискоре сервере "Буст Контора".\nDiscord логин бота: Reflect Solutions bot#7166'))
-        self.instruction_message_frame_label.setFont(fields_font)
-        self.instruction_message_frame_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.messagebox_message_frame_label = QtWidgets.QLabel(self.messagebox_message_frame)
+        self.messagebox_message_frame_label.setGeometry(20, 20, self.messagebox_message_frame.width() - 40, self.messagebox_message_frame.height() - 40)
+        self.messagebox_message_frame_label.setStyleSheet('QLabel{\nbackground-color: none; color: rgb(150, 150, 150);}')
+        self.messagebox_message_frame_label.setText(translate('', 'Для получения вашего Discord-ID введите ">>id" боту.\nДля получения проверочного ключа введите ">>key" боту.\nДля успешной отправки сообщений боту вы должны:\n1. Разрешить отправшу сообщений членам сервера в дискорде.\n2. Находиться на дискоре сервере "Буст Контора".\nDiscord логин бота: Reflect Solutions bot#7166'))
+        self.messagebox_message_frame_label.setFont(fields_font)
+        self.messagebox_message_frame_label.setAlignment(QtCore.Qt.AlignCenter)
 
-        self.instruction_frame.hide()
-        self.fade(self.instruction_message_frame, 0, 0.0, 0.0).start()
+        self.messagebox_frame.hide()
+        self.fade(self.messagebox_message_frame, 0, 0.0, 0.0).start()
+
+        # Приоритет по возрастанию -> инфобокс, уведомление, загрузка
+        # Notification frame
+        self.notification_frame = QtWidgets.QPushButton(self)
+        self.notification_frame.setStyleSheet('QPushButton{\nbackground-color: none; border: none;}')
+        self.notification_frame.setGeometry(0, 0, self.width(), self.height())
+
+        self.notification_message_frame = QtWidgets.QFrame(self.notification_frame)
+        self.notification_message_frame.setGeometry(self.width() // 2 - 250, self.height() // 2 - 100, 500, 200)
+        self.notification_message_frame.setStyleSheet('QFrame{\nbackground-color: white;}')
+
+        self.notification_message_frame_label = QtWidgets.QLabel(self.notification_message_frame)
+        self.notification_message_frame_label.setGeometry(190, 20, self.notification_message_frame.width() - 210, self.notification_message_frame.height() - 40)
+        self.notification_message_frame_label.setStyleSheet('QLabel{\nbackground-color: none; color: rgb(150, 150, 150);}')
+        self.notification_message_frame_label.setText(translate('', 'Введенные данные не коректны!'))
+        self.notification_message_frame_label.setAlignment(QtCore.Qt.AlignCenter)
+
+        self.notification_message_frame_picture = QtWidgets.QFrame(self.notification_message_frame)
+        self.notification_message_frame_picture.setGeometry(20, 20, self.notification_message_frame.width() - 350, self.notification_message_frame.height() - 40)
+        self.notification_message_frame_picture.setStyleSheet('QFrame{\nbackground-color: none; background-image: url(rs_images/warning.png);}')
+
+        self.notification_frame.hide()
+        self.fade(self.notification_message_frame, 0, 0.0, 0.0).start()
+
+        # Loading frame
+        self.loading_gif = QtGui.QMovie('rs_gifs\\spinner.gif')
+        self.loading_gif.start()
+
+        self.loading_frame = QtWidgets.QPushButton(self)
+        self.loading_frame.setStyleSheet('QPushButton{\nbackground-color: none; border: none;}')
+        self.loading_frame.setGeometry(0, 0, self.width(), self.height())
+
+        self.loading_message_frame = QtWidgets.QFrame(self.loading_frame)
+        self.loading_message_frame.setGeometry(self.width() // 2 - 250, self.height() // 2 - 100, 500, 200)
+        self.loading_message_frame.setStyleSheet('QFrame{\nbackground-color: white;}')
+
+        self.loading_message_frame_label = QtWidgets.QLabel(self.loading_message_frame)
+        self.loading_message_frame_label.setGeometry(190, 20, self.loading_message_frame.width() - 210, self.loading_message_frame.height() - 40)
+        self.loading_message_frame_label.setStyleSheet('QLabel{\nbackground-color: none; color: rgb(150, 150, 150);}')
+        self.loading_message_frame_label.setText(translate('', 'Введенные данные не коректны!'))
+        self.loading_message_frame_label.setAlignment(QtCore.Qt.AlignCenter)
+
+        self.loading_message_frame_gif = QtWidgets.QLabel(self.loading_message_frame)
+        self.loading_message_frame_gif.setGeometry(20, 20, self.loading_message_frame.width() - 350, self.loading_message_frame.height() - 40)
+        self.loading_message_frame_gif.setStyleSheet('QFrame{\nbackground-color: none;}')
+        self.loading_message_frame_gif.setMovie(self.loading_gif)
+
+        self.loading_frame.hide()
 
 
 application = QtWidgets.QApplication(sys.argv)
